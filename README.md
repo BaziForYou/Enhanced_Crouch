@@ -24,3 +24,10 @@
 ```bash
 start Enhanced_Crouch
 ```
+
+## Exports	
+#### Client
+
+| Export                         | Description                               | Parameter(s)  | Return type          |
+|--------------------------------|-------------------------------------------|---------------|----------------------|
+| IsCrouched                     | Return is player crouched or no           | Nothing       | Boolean               |
