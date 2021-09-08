@@ -100,3 +100,11 @@ RegisterCommand('crouch', function()
 end, false)
 
 RegisterKeyMapping('crouch', 'Crouch', 'keyboard', 'LCONTROL') -- now its better player can change to any bottom they want
+
+
+-- Exports --
+IsCrouched = function()
+    return Crouched
+end
+
+exports("IsCrouched", IsCrouched)
