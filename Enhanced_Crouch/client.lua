@@ -62,9 +62,6 @@ end
 Citizen.CreateThread( function()
 	SetupCrouch()
     while true do 
-        -- DisableControlAction(0, 36, true) -- DISABLE DUCK and this make 0.01 and some time 0.02 but always left control will disable
-	-- SetPedStealthMovement(PlayerPedId(), false, "DEFAULT_ACTION") -- DISABLE DUCK But make script idle 0.02
-		
 		if CrouchedForce then
 			local CanDo = CanCrouch()
 			if CanDo and Crouched and IsPlayerFreeAimed() then
