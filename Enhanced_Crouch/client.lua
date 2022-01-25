@@ -98,7 +98,7 @@ RegisterCommand('crouch', function()
 		end
 
 		Cooldown = true
-			SetTimeout(CoolDownTime, function()
+		SetTimeout(CoolDownTime, function()
 			Cooldown = false
 		end)
 	end
