@@ -24,6 +24,10 @@ SetupCrouch = function()
 	end
 end
 
+RemoveCrouchAnim = function()
+	RemoveAnimDict('move_ped_crouched')
+end
+
 CanCrouch = function()
 	local PlayerPed = PlayerPedId()
 	if IsPedOnFoot(PlayerPed) and not IsPedJumping(PlayerPed) and not IsPedFalling(PlayerPed) and not IsPedDeadOrDying(PlayerPed) then
@@ -50,7 +54,6 @@ SetPlayerAimSpeed = function()
 end
 
 IsPlayerFreeAimed = function()
-	local Player = PlayerPedId()
 	local PlayerID = GetPlayerIndex()
 	if IsPlayerFreeAiming(PlayerID) or IsAimCamActive() or IsAimCamThirdPersonActive() then
 		return true
@@ -61,8 +64,7 @@ end
 
 CrouchLoop = function()
 	SetupCrouch()
-    while CrouchedForce do 
-
+	while CrouchedForce do
 		local CanDo = CanCrouch()
 		if CanDo and Crouched and IsPlayerFreeAimed() then
 			SetPlayerAimSpeed()
@@ -72,16 +74,18 @@ CrouchLoop = function()
 			CrouchedForce = false
 			NormalWalk()
 		end
+
 		local NowCam = GetFollowPedCamViewMode()
 		if CanDo and Crouched and NowCam == 4 then
 			SetFollowPedCamViewMode(LastCam)
 		elseif CanDo and Crouched and NowCam ~= 4 then
 			LastCam = NowCam
 		end
-        Citizen.Wait(5)
-    end
+
+		Citizen.Wait(5)
+	end
 	NormalWalk()
-	RemoveAnimDict('move_ped_crouched')
+	RemoveCrouchAnim()
 end
 
 RegisterCommand('crouch', function()
@@ -90,11 +94,11 @@ RegisterCommand('crouch', function()
 		CrouchedForce = not CrouchedForce
 
 		if CrouchedForce then
-			CreateThread(CrouchLoop)
+			CreateThread(CrouchLoop) -- Magic Part 2 lamo
 		end
 
 		Cooldown = true
-		SetTimeout(CoolDownTime, function()
+			SetTimeout(CoolDownTime, function()
 			Cooldown = false
 		end)
 	end
@@ -105,7 +109,7 @@ RegisterKeyMapping('crouch', 'Crouch', 'keyboard', 'LCONTROL') -- now its better
 
 -- Exports --
 IsCrouched = function()
-    return Crouched
+	return Crouched
 end
 
 exports("IsCrouched", IsCrouched)
