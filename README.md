@@ -6,7 +6,7 @@
 - Blocked duck abuse (on rapid click on button)
 - Standalone it doesn't use any function from anywhere
 - Player can change crouch key to any key they want (Settings => Key Bindings => FiveM => crouch)
-- Optimize and get low usage (0.01 ~ 0.02 on idle)
+- Optimize and get low usage (0.00 on idle)
 - Clean coding
 
 # Resource preview
