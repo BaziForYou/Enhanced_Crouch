@@ -59,37 +59,40 @@ IsPlayerFreeAimed = function()
 	end
 end
 
-Citizen.CreateThread( function()
+CrouchLoop = function()
 	SetupCrouch()
-    while true do 
-		if CrouchedForce then
-			local CanDo = CanCrouch()
-			if CanDo and Crouched and IsPlayerFreeAimed() then
-				SetPlayerAimSpeed()
-			elseif CanDo and (not Crouched or Aimed) then
-				CrouchPlayer()
-			elseif not CanDo and Crouched then
-				CrouchedForce = false
-				NormalWalk()
-			end
-			local NowCam = GetFollowPedCamViewMode()
-			if CanDo and Crouched and NowCam == 4 then
-				SetFollowPedCamViewMode(LastCam)
-			elseif CanDo and Crouched and NowCam ~= 4 then
-				LastCam = NowCam
-			end
-		elseif Crouched then
+    while CrouchedForce do 
+
+		local CanDo = CanCrouch()
+		if CanDo and Crouched and IsPlayerFreeAimed() then
+			SetPlayerAimSpeed()
+		elseif CanDo and (not Crouched or Aimed) then
+			CrouchPlayer()
+		elseif not CanDo and Crouched then
+			CrouchedForce = false
 			NormalWalk()
 		end
-		
+		local NowCam = GetFollowPedCamViewMode()
+		if CanDo and Crouched and NowCam == 4 then
+			SetFollowPedCamViewMode(LastCam)
+		elseif CanDo and Crouched and NowCam ~= 4 then
+			LastCam = NowCam
+		end
         Citizen.Wait(5)
     end
-end)
+	NormalWalk()
+	RemoveAnimDict('move_ped_crouched')
+end
 
 RegisterCommand('crouch', function()
 	DisableControlAction(0, 36, true) -- magic
 	if not Cooldown then
 		CrouchedForce = not CrouchedForce
+
+		if CrouchedForce then
+			CreateThread(CrouchLoop)
+		end
+
 		Cooldown = true
 		SetTimeout(CoolDownTime, function()
 			Cooldown = false
