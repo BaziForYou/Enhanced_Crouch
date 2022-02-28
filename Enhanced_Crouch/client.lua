@@ -90,7 +90,7 @@ end
 
 RegisterCommand('crouch', function()
 	DisableControlAction(0, 36, true) -- magic
-	if not Cooldown then
+	if not Cooldown and not IsPedInAnyVehicle(PlayerPedId(), false) then
 		CrouchedForce = not CrouchedForce
 
 		if CrouchedForce then
