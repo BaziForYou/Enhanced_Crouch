@@ -1,19 +1,21 @@
 Crouched = false
 CrouchedForce = false
 Aimed = false
-LastCam = 0
 Cooldown = false
-
+PlayerInfo = {
+	playerPed = PlayerPedId(),
+	playerID = GetPlayerIndex(),
+	nextCheck = GetGameTimer() + 1500
+}
 CoolDownTime = 500 -- in ms
 
-NormalWalk = function() 
-	local Player = PlayerPedId()
-	SetPedMaxMoveBlendRatio(Player, 1.0)
-	ResetPedMovementClipset(Player, 0.55)
-	ResetPedStrafeClipset(Player)
-	SetPedCanPlayAmbientAnims(Player, true)
-	SetPedCanPlayAmbientBaseAnims(Player, true)
-	ResetPedWeaponMovementClipset(Player)
+NormalWalk = function()
+	SetPedMaxMoveBlendRatio(PlayerInfo.playerPed, 1.0)
+	ResetPedMovementClipset(PlayerInfo.playerPed, 0.55)
+	ResetPedStrafeClipset(PlayerInfo.playerPed)
+	SetPedCanPlayAmbientAnims(PlayerInfo.playerPed, true)
+	SetPedCanPlayAmbientBaseAnims(PlayerInfo.playerPed, true)
+	ResetPedWeaponMovementClipset(PlayerInfo.playerPed)
 	Crouched = false
 end
 
@@ -29,8 +31,7 @@ RemoveCrouchAnim = function()
 end
 
 CanCrouch = function()
-	local PlayerPed = PlayerPedId()
-	if IsPedOnFoot(PlayerPed) and not IsPedJumping(PlayerPed) and not IsPedFalling(PlayerPed) and not IsPedDeadOrDying(PlayerPed) then
+	if IsPedOnFoot(PlayerInfo.playerPed) and not IsPedInAnyVehicle(PlayerInfo.playerPed, false) and not IsPedJumping(PlayerInfo.playerPed) and not IsPedFalling(PlayerInfo.playerPed) and not IsPedDeadOrDying(PlayerInfo.playerPed) then
 		return true
 	else
 		return false
@@ -38,24 +39,21 @@ CanCrouch = function()
 end
 
 CrouchPlayer = function()
-	local Player = PlayerPedId()
-	SetPedUsingActionMode(Player, false, -1, "DEFAULT_ACTION")
-	SetPedMovementClipset(Player, 'move_ped_crouched', 0.55)
-	SetPedStrafeClipset(Player, 'move_ped_crouched_strafing') -- it force be on third person if not player will freeze but this func make player can shoot with good anim on crouch if someone know how to fix this make request :D
-	SetWeaponAnimationOverride(Player, "Ballistic")
+	SetPedUsingActionMode(PlayerInfo.playerPed, false, -1, "DEFAULT_ACTION")
+	SetPedMovementClipset(PlayerInfo.playerPed, 'move_ped_crouched', 0.55)
+	SetPedStrafeClipset(PlayerInfo.playerPed, 'move_ped_crouched_strafing') -- it force be on third person if not player will freeze but this func make player can shoot with good anim on crouch if someone know how to fix this make request :D
+	SetWeaponAnimationOverride(PlayerInfo.playerPed, "Ballistic")
 	Crouched = true
 	Aimed = false
 end
 
 SetPlayerAimSpeed = function()
-	local Player = PlayerPedId()
-	SetPedMaxMoveBlendRatio(Player, 0.2)
+	SetPedMaxMoveBlendRatio(PlayerInfo.playerPed, 0.2)
 	Aimed = true
 end
 
 IsPlayerFreeAimed = function()
-	local PlayerID = GetPlayerIndex()
-	if IsPlayerFreeAiming(PlayerID) or IsAimCamActive() or IsAimCamThirdPersonActive() then
+	if IsPlayerFreeAiming(PlayerInfo.playerID) or IsAimCamActive() or IsAimCamThirdPersonActive() then
 		return true
 	else
 		return false
@@ -66,6 +64,13 @@ CrouchLoop = function()
 	SetupCrouch()
 	while CrouchedForce do
 		DisableFirstPersonCamThisFrame()
+
+		local now = GetGameTimer()
+		if now >= PlayerInfo.nextCheck then
+			PlayerInfo.playerPed = PlayerPedId()
+			PlayerInfo.playerID = GetPlayerIndex()
+			PlayerInfo.nextCheck = now + 1500
+		end
 
 		local CanDo = CanCrouch()
 		if CanDo and Crouched and IsPlayerFreeAimed() then
