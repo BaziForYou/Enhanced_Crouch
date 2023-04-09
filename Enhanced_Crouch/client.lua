@@ -65,6 +65,8 @@ end
 CrouchLoop = function()
 	SetupCrouch()
 	while CrouchedForce do
+		DisableFirstPersonCamThisFrame()
+
 		local CanDo = CanCrouch()
 		if CanDo and Crouched and IsPlayerFreeAimed() then
 			SetPlayerAimSpeed()
@@ -73,13 +75,6 @@ CrouchLoop = function()
 		elseif not CanDo and Crouched then
 			CrouchedForce = false
 			NormalWalk()
-		end
-
-		local NowCam = GetFollowPedCamViewMode()
-		if CanDo and Crouched and NowCam == 4 then
-			SetFollowPedCamViewMode(LastCam)
-		elseif CanDo and Crouched and NowCam ~= 4 then
-			LastCam = NowCam
 		end
 
 		Citizen.Wait(5)
