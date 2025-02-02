@@ -1,13 +1,22 @@
 Crouched = false
 CrouchedForce = false
 Aimed = false
-Cooldown = false
+CoolDown = false
 PlayerInfo = {
 	playerPed = PlayerPedId(),
 	playerID = GetPlayerIndex(),
 	nextCheck = GetGameTimer() + 1500
 }
-CoolDownTime = 500 -- in ms
+CoolDownTime = 500 -- in ms // if put 0 or false you will disable the cooldown
+
+RefreshPlayerInfo = function(force)
+	local now = GetGameTimer()
+	if force or now >= PlayerInfo.nextCheck then
+		PlayerInfo.playerPed = PlayerPedId()
+		PlayerInfo.playerID = GetPlayerIndex()
+		PlayerInfo.nextCheck = now + 1500
+	end
+end
 
 NormalWalk = function()
 	SetPedMaxMoveBlendRatio(PlayerInfo.playerPed, 1.0)
@@ -21,7 +30,7 @@ end
 
 SetupCrouch = function()
 	while not HasAnimSetLoaded('move_ped_crouched') do
-		Citizen.Wait(5)
+		Wait(5)
 		RequestAnimSet('move_ped_crouched')
 	end
 end
@@ -31,7 +40,8 @@ RemoveCrouchAnim = function()
 end
 
 CanCrouch = function()
-	if IsPedOnFoot(PlayerInfo.playerPed) and not IsPedInAnyVehicle(PlayerInfo.playerPed, false) and not IsPedJumping(PlayerInfo.playerPed) and not IsPedFalling(PlayerInfo.playerPed) and not IsPedDeadOrDying(PlayerInfo.playerPed) then
+	if IsPedOnFoot(PlayerInfo.playerPed) and not IsPedInAnyVehicle(PlayerInfo.playerPed, false) and not IsPedJumping(PlayerInfo.playerPed)
+	and not IsPedFalling(PlayerInfo.playerPed) and not IsPedDeadOrDying(PlayerInfo.playerPed) then
 		return true
 	else
 		return false
@@ -65,12 +75,7 @@ CrouchLoop = function()
 	while CrouchedForce do
 		DisableFirstPersonCamThisFrame()
 
-		local now = GetGameTimer()
-		if now >= PlayerInfo.nextCheck then
-			PlayerInfo.playerPed = PlayerPedId()
-			PlayerInfo.playerID = GetPlayerIndex()
-			PlayerInfo.nextCheck = now + 1500
-		end
+		RefreshPlayerInfo()
 
 		local CanDo = CanCrouch()
 		if CanDo and Crouched and IsPlayerFreeAimed() then
@@ -82,29 +87,34 @@ CrouchLoop = function()
 			NormalWalk()
 		end
 
-		Citizen.Wait(5)
+		Wait(5)
 	end
 	NormalWalk()
 	RemoveCrouchAnim()
 end
 
 RegisterCommand('crouch', function()
-	DisableControlAction(0, 36, true) -- magic
-	if not Cooldown then
-		CrouchedForce = not CrouchedForce
+	DisableControlAction(0, 36, true)
+	if not CoolDown then
+		RefreshPlayerInfo(true)
+
+		local CanDo = CanCrouch()
+		CrouchedForce = CanDo and not CrouchedForce or false
 
 		if CrouchedForce then
-			CreateThread(CrouchLoop) -- Magic Part 2 lamo
+			CreateThread(CrouchLoop)
 		end
 
-		Cooldown = true
-		SetTimeout(CoolDownTime, function()
-			Cooldown = false
-		end)
+		if CoolDownTime and CoolDownTime ~= 0 then
+			CoolDown = true
+			SetTimeout(CoolDownTime, function()
+				CoolDown = false
+			end)
+		end
 	end
 end, false)
 
-RegisterKeyMapping('crouch', 'Crouch', 'keyboard', 'LCONTROL') -- now its better player can change to any bottom they want
+RegisterKeyMapping('crouch', 'Crouch', 'keyboard', 'LCONTROL')
 
 
 -- Exports --
